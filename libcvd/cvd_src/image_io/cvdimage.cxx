@@ -65,7 +65,7 @@ void pred_horizontal_undiff(const byte* in, int width, byte* out, int pred_len =
 // that it is in some sense the best 2d predictor you can get. Again compute
 // the residual differences for a single line of pixels. The predictor uses
 // the three values stored @p pred_len bytes to the left and one line above
-// the current pixel to predict the value. 
+// the current pixel to predict the value.
 void pred_2doptimal_diff(const byte* in, int width, byte* buffer, byte* out, int pred_len = 1)
 {
 	// simple vertical prediction for first column(s)
@@ -264,7 +264,7 @@ Huff* create_tree(const array<size_t,256>& h, vector<Huff*>& symbols)
 	}
 
 	//Starting negative and incrementing makes equal probability
-	//symbols appear in symbol order. There are at most 2x the number of 
+	//symbols appear in symbol order. There are at most 2x the number of
 	//junk symbols as real ones.
 	int junk_symbol=INT_MIN;
 	while(table.size() > 1)
@@ -278,12 +278,12 @@ Huff* create_tree(const array<size_t,256>& h, vector<Huff*>& symbols)
 
 		Huff s = {smallest, next_smallest, 0, junk_symbol++, smallest->count + next_smallest->count};
 		Huff*ss = new Huff(s);
-		
+
 		smallest->parent = ss;
 		next_smallest->parent=ss;
 		table.insert(ss);
 	}
-	
+
 	return *table.begin();
 }
 
@@ -312,7 +312,7 @@ struct SortIndex
 	{
 		return d[a] > d[b];
 	}
-	
+
 };
 
 // given a image (or "some data") and a histogram of the contained symbols,
@@ -342,10 +342,10 @@ vector<PackType> huff_compress(const Image<byte>& im, const array<size_t,256>& h
 				bits.push_back(1);
 			else
 				bits.push_back(0);
-			
+
 			h = h->parent;
 		}
-		
+
 		reverse(bits.begin(), bits.end());
 		symbols[symbol] = bits;
 
@@ -353,7 +353,7 @@ vector<PackType> huff_compress(const Image<byte>& im, const array<size_t,256>& h
 
 	//Convert the symbols in to a bit packed form.
 	//The symbols are packed in to chunks of PackType (uint16_t)
-	//For each of the 256 symbols, store the symbol 16 different times with 
+	//For each of the 256 symbols, store the symbol 16 different times with
 	//starting offset by 16 different shifts.
 
 	//This allows the symbols to be efficiently stuffed in to the stream later.
@@ -379,13 +379,13 @@ vector<PackType> huff_compress(const Image<byte>& im, const array<size_t,256>& h
 						chunk = 0;
 					}
 				}
-				
+
 				if(o % PackBits)
 					fast_symbols[i][off][fast_symbols_num_chunks[i][off]++] = chunk;
 			}
 		}
 
-	
+
 	//Now pack the symbols into the array
 	vector<PackType> r2;
 	r2.reserve(im.size().area()/(2*PackBits));
@@ -393,7 +393,7 @@ vector<PackType> huff_compress(const Image<byte>& im, const array<size_t,256>& h
 	for(Image<byte>::const_iterator i = im.begin(); i!=im.end(); i++)
 	{
 		const int off = bit % PackBits;
-		
+
 		//Deal with the first (unaligned byte)
 		if(off == 0)
 			r2.push_back(fast_symbols[*i][0][0]);
@@ -420,7 +420,7 @@ template<class P> void huff_decompress(const vector<P>& b, const array<size_t,25
 	vector<Huff*> terminals;
 	Huff* table = create_tree(h, terminals);
 
-	int i=0;	
+	int i=0;
 	for(Image<byte>::iterator r=ret.begin(); r != ret.end(); r++)
 	{
 		Huff* h = table;
@@ -434,8 +434,8 @@ template<class P> void huff_decompress(const vector<P>& b, const array<size_t,25
 			else
 				h = h->zero;
 		}
-		
-		*r = h->symbol;	
+
+		*r = h->symbol;
 	}
 }
 
@@ -454,7 +454,7 @@ class ReadPimpl
 		{
 			return type;
 		}
-		
+
 		template<class T> void get_raw_pixel_line(T* d)
 		{
 			if(datatype() != PNM::type_name<T>::name())
@@ -640,7 +640,7 @@ void ReadPimpl::get_raw_pixel_lines(unsigned char*data, unsigned long nlines)
 		}
 		break;
 	case PRED_2D_OPTIMAL:
-		if (row==0) {		
+		if (row==0) {
 			pred_horizontal_undiff(diff[row], xs*bypp, data, pred_len);
 			memcpy(buffer, data, xs*bypp);
 			data += xs*bypp;
@@ -694,7 +694,7 @@ ReadPimpl::~ReadPimpl()
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  Compression 
+//  Compression
 //
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -711,7 +711,7 @@ class WritePimpl
 		void write_raw_pixel_lines(const unsigned char*, unsigned long);
 		template<class C> 	void write_raw_pixel_line(const C*);
 		~WritePimpl();
-		
+
 	private:
 		void write_header(std::ostream& os);
 		void write_hist(std::ostream& os, const array<size_t, 256>& h);
@@ -739,7 +739,7 @@ WritePimpl::WritePimpl(std::ostream& out, int xsize, int ysize, const string& t)
 	row=0;
 	pred_mode = PRED_2D_OPTIMAL;
 //	pred_mode = PRED_HORIZONTAL;
-	
+
 	if(type == "unsigned char")
 		bypp = pred_len = 1;
 	else if(type == "CVD::Rgb<unsigned char>")
@@ -813,7 +813,7 @@ void WritePimpl::write_raw_pixel_lines(const unsigned char* data, unsigned long 
 			nlines--;
 		}
 	}
-	
+
 }
 
 template<class C> 	void WritePimpl::write_raw_pixel_line(const C*d)
@@ -821,7 +821,7 @@ template<class C> 	void WritePimpl::write_raw_pixel_line(const C*d)
 	if(type != PNM::type_name<C>::name())
 		throw CVD::Exceptions::Image_IO::WriteTypeMismatch(type, PNM::type_name<C>::name());
 
-	write_raw_pixel_lines((const unsigned char*)d, 1); 
+	write_raw_pixel_lines((const unsigned char*)d, 1);
 }
 
 void WritePimpl::bayer_swap_rows(void)
